@@ -11,10 +11,10 @@ namespace AStarProjectRedux
         static void Main()
         {
             //Game g = new Game();
-            Agent smith = new Agent();
+            Agent SnakeEater = new Agent();
 
             Game.DiplayMap();
-            smith.Play();
+            SnakeEater.Play();
 
             Console.ReadLine();
 
