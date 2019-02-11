@@ -13,6 +13,7 @@ namespace AStarProjectRedux
         Location target = new Location { X = 10, Y = 10 };
         List<Location> openList = new List<Location>();
         List<Location> closedList = new List<Location>();
+        public static List<Location> doneList = new List<Location>();
         int g = 0;
 
         public Agent()
@@ -24,6 +25,25 @@ namespace AStarProjectRedux
         private static int ComputeHScore(int x, int y, int targetX, int targetY)
         {
             return Math.Abs(targetX - x) + Math.Abs(targetY - y);
+        } 
+
+        public static void CallBack()
+        {
+            doneList.Reverse();
+            foreach (Location l in doneList)
+            {
+                Console.WriteLine("[" + l.X + ", " + l.Y + "]");
+            }
+        }
+
+        public void CallParent()
+        {
+            // Keep calling parent if it isn't the start of null (shouldn't be null)
+            doneList.Add(current);
+            if (current.parent != null || current.parent != start)
+            {
+                current.parent.CallP();
+            }
         }
 
         public void Play()
@@ -31,10 +51,12 @@ namespace AStarProjectRedux
             while (openList.Count > 0)
             {
                 ChangeCurrent();
-                DisplayLocation();
 
                 if (closedList.FirstOrDefault(l => l.X == target.X && l.Y == target.Y) != null)
-                    break;//Console.WriteLine("THIS HAD TO BREAK B*TCH");//
+                {
+                    CallParent();
+                    break;
+                }
 
                 var adjacentSquares = MovementCheck(current.X, current.Y, Game.map);
                 g++;
@@ -54,13 +76,9 @@ namespace AStarProjectRedux
 
                 if (openList.FirstOrDefault(l => l.X == adjacentSquare.X && l.Y == adjacentSquare.Y) == null)
                 {
-                    //if(adjacentSquare.X-current.X != 0 && adjacentSquare.Y-current.Y !=0)
-                    //{
-
-                    //}
-                    //else
+                    if ((adjacentSquare.X + current.X != 0 && adjacentSquare.Y + current.Y != 0) || (adjacentSquare.X - current.X != 0 && adjacentSquare.Y - current.Y != 0))
                     {
-                        adjacentSquare.G = g;
+                        adjacentSquare.G =  Math.Sqrt((g * g) + (g * g));
                         adjacentSquare.H = ComputeHScore(adjacentSquare.X, adjacentSquare.Y, target.X, target.Y);
                         adjacentSquare.F = adjacentSquare.G + adjacentSquare.H;
                         adjacentSquare.parent = current;
@@ -70,7 +88,7 @@ namespace AStarProjectRedux
                 }
                 else
                 {
-                    if (g + adjacentSquare.H < adjacentSquare.F)
+                    if (adjacentSquare.G + adjacentSquare.H < adjacentSquare.F)
                     {
                         adjacentSquare.G = g;
                         adjacentSquare.F = adjacentSquare.G + adjacentSquare.H;
@@ -78,6 +96,15 @@ namespace AStarProjectRedux
                     }
                 }
             }
+        }
+
+        private void ReturnToSender()
+        {
+            int closedListLast = closedList.Count-2;
+            current = closedList.ElementAt(closedListLast);
+
+            // Maybe?
+            openList.Remove(current);
         }
 
         private void ChangeCurrent()
@@ -99,22 +126,15 @@ namespace AStarProjectRedux
                 new Location {X = x+1, Y = y},
 
                 // Diagonals
-                //new Location {X = x-1, Y = y-1},
-                //new Location {X = x+1, Y = y+1},
-                //new Location {X = x-1, Y = y+1},
-                //new Location {X = x+1, Y = y-1}
+                new Location {X = x-1, Y = y-1},
+                new Location {X = x+1, Y = y+1},
+                new Location {X = x-1, Y = y+1},
+                new Location {X = x+1, Y = y-1}
             };
 
             return proposedLocations.Where(l => map[l.Y][l.X] == ' ' || map[l.Y][l.X] == 'B').ToList();
 
         }
-
-        private void DisplayLocation()
-        {
-            Console.SetCursorPosition(current.X, current.Y);
-            Console.Write('.');
-            Console.SetCursorPosition(current.X, current.Y);
-            System.Threading.Thread.Sleep(1000);
-        }
+        
     }
 }
