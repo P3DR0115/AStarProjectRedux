@@ -10,6 +10,7 @@ namespace AStarProjectRedux
     {
         public static string[] map = new string[]
         {
+            //The Map that the Agent is trying to navigate
            //0123456789AB
             "+----------+",//0
             "|A    x    |",//1
@@ -25,6 +26,7 @@ namespace AStarProjectRedux
             "+----------+" //11
         };
 
+        //Writing the map onto the console
         public static void DiplayMap()
         {
             foreach(string str in map)
